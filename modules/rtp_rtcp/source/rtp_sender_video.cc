@@ -496,10 +496,10 @@ bool RTPSenderVideo::SendVideo(
 
 #ifdef WEBRTC_USE_H265
   else if (codec_type == VideoCodecType::kVideoCodecH265) {
-    if (!absl::get<RTPVideoHeaderH265>(video_header.video_type_header)
-             .has_last_fragement) {
-      frame_completed = false;
-    }
+//    if (!absl::get<RTPVideoHeaderH265>(video_header.video_type_header)
+//             .has_last_fragement) {
+//      frame_completed = false;
+//    }
   }
 #endif
   MaybeUpdateCurrentPlayoutDelay(video_header);
