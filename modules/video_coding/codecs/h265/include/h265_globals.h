@@ -14,7 +14,8 @@
 #ifndef MODULES_VIDEO_CODING_CODECS_H265_INCLUDE_H265_GLOBALS_H_
 #define MODULES_VIDEO_CODING_CODECS_H265_INCLUDE_H265_GLOBALS_H_
 
-#include "modules/video_coding/codecs/h264/include/h264_globals.h"
+#include "modules/video_coding/codecs/interface/common_constants.h"
+#include "rtc_base/checks.h"
 
 namespace webrtc {
 
