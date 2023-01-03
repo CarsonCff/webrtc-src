@@ -90,6 +90,16 @@ struct CodecSpecificInfoH264 {
   bool base_layer_sync;
   bool idr_frame;
 };
+
+struct CodecSpecificInfoH265 {
+  H265PacketizationMode packetization_mode;
+  bool idr_frame;
+  bool last_fragment_in_frame;
+  int16_t picture_id;
+  int dependencies[5];
+  int dtis[10];
+};
+
 static_assert(std::is_pod<CodecSpecificInfoH264>::value, "");
 
 union CodecSpecificInfoUnion {
