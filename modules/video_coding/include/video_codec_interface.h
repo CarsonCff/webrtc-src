@@ -96,6 +96,7 @@ union CodecSpecificInfoUnion {
   CodecSpecificInfoVP8 VP8;
   CodecSpecificInfoVP9 VP9;
   CodecSpecificInfoH264 H264;
+  CodecSpecificInfoH265 H265;
 };
 static_assert(std::is_pod<CodecSpecificInfoUnion>::value, "");
 
