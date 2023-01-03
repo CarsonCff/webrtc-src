@@ -52,7 +52,7 @@ std::vector<SdpVideoFormat> InternalDecoderFactory::GetSupportedFormats()
 
 #ifdef WEBRTC_USE_H265
   formats.push_back(SdpVideoFormat(cricket::kH265CodecName));
-  RTC_LOG(LS_WARNING)  << "supoort h265 codec format"
+  RTC_LOG(LS_WARNING)  << "supoort codec format" << cricket::kH265CodecName;
 #endif
 
   if (kIsLibaomAv1DecoderSupported ||
