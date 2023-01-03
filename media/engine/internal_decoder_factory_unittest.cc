@@ -34,6 +34,13 @@ constexpr bool kH264Enabled = true;
 #else
 constexpr bool kH264Enabled = false;
 #endif
+
+#ifdef WEBRTC_USE_H265
+constexpr bool kH265Enabled = true;
+#else
+constexpr bool kH265Enabled = false;
+#endif
+
 constexpr VideoDecoderFactory::CodecSupport kSupported = {
     /*is_supported=*/true, /*is_power_efficient=*/false};
 constexpr VideoDecoderFactory::CodecSupport kUnsupported = {
@@ -75,6 +82,14 @@ TEST(InternalDecoderFactoryTest, H264) {
       factory.CreateVideoDecoder(SdpVideoFormat(cricket::kH264CodecName));
   EXPECT_EQ(static_cast<bool>(decoder), kH264Enabled);
 }
+
+TEST(InternalDecoderFactoryTest, H265) {
+  InternalDecoderFactory factory;
+  std::unique_ptr<VideoDecoder> decoder =
+      factory.CreateVideoDecoder(SdpVideoFormat(cricket::kH265CodecName));
+  EXPECT_EQ(static_cast<bool>(decoder), kH265Enabled);
+}
+
 
 TEST(InternalDecoderFactoryTest, Av1) {
   InternalDecoderFactory factory;
