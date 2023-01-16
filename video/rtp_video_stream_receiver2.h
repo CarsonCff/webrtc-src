@@ -38,6 +38,7 @@
 #include "modules/rtp_rtcp/source/rtp_video_header.h"
 #include "modules/rtp_rtcp/source/video_rtp_depacketizer.h"
 #include "modules/video_coding/h264_sps_pps_tracker.h"
+#include "modules/video_coding/h265_vps_sps_pps_tracker.h"
 #include "modules/video_coding/loss_notification_controller.h"
 #include "modules/video_coding/nack_requester.h"
 #include "modules/video_coding/packet_buffer.h"
