@@ -52,7 +52,6 @@ H265VpsSpsPpsTracker::FixedBitstream H265VpsSpsPpsTracker::CopyAndFixBitstream(
     const H265NaluInfo& nalu = h265_header.nalus[i];
     switch (nalu.type) {
       case H265::NaluType::kVps: {
-        vps_data_[nalu.vps_id].size = 0;
         break;
       }
       case H265::NaluType::kSps: {
@@ -230,13 +229,13 @@ void H265VpsSpsPpsTracker::InsertVpsSpsPpsNalus(
     const std::vector<uint8_t>& vps,
     const std::vector<uint8_t>& sps,
     const std::vector<uint8_t>& pps) {
-  constexpr size_t kNaluHeaderOffset = 1;
+  constexpr size_t kNaluHeaderOffset = 2;
   if (vps.size() < kNaluHeaderOffset) {
     RTC_LOG(LS_WARNING) << "VPS size  " << vps.size() << " is smaller than "
                         << kNaluHeaderOffset;
     return;
   }
-  if ((vps[0] & 0x7e) >> 1 != H265::NaluType::kSps) {
+  if ((vps[0] & 0x7e) >> 1 != H265::NaluType::kVps) {
     RTC_LOG(LS_WARNING) << "SPS Nalu header missing";
     return;
   }

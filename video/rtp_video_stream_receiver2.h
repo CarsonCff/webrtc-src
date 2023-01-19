@@ -50,6 +50,7 @@
 #include "video/buffered_frame_decryptor.h"
 #include "video/rtp_video_stream_receiver_frame_transformer_delegate.h"
 #include "video/unique_timestamp_counter.h"
+#include "modules/rtp_rtcp/source/video_rtp_depacketizer_h265.h"
 
 namespace webrtc {
 
@@ -280,6 +281,8 @@ class RtpVideoStreamReceiver2 : public LossNotificationSender,
   void UpdateHistograms();
   bool IsRedEnabled() const;
   void InsertSpsPpsIntoTracker(uint8_t payload_type)
+      RTC_RUN_ON(packet_sequence_checker_);
+  void InsertVpsSpsPpsIntoTracker(const RtpPacketReceived& packet);
       RTC_RUN_ON(packet_sequence_checker_);
   void OnInsertedPacket(video_coding::PacketBuffer::InsertResult result)
       RTC_RUN_ON(packet_sequence_checker_);

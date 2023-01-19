@@ -21,61 +21,7 @@
 using namespace rtc;
 
 namespace webrtc {
-namespace {
-
-enum NaluType {
-  kTrailN = 0,
-  kTrailR = 1,
-  kTsaN = 2,
-  kTsaR = 3,
-  kStsaN = 4,
-  kStsaR = 5,
-  kRadlN = 6,
-  kRadlR = 7,
-  kBlaWLp = 16,
-  kBlaWRadl = 17,
-  kBlaNLp = 18,
-  kIdrWRadl = 19,
-  kIdrNLp = 20,
-  kCra = 21,
-  kVps = 32,
-  kHevcSps = 33,
-  kHevcPps = 34,
-  kHevcAud = 35,
-  kPrefixSei = 39,
-  kSuffixSei = 40,
-  kHevcAp = 48,
-  kHevcFu = 49
-};
-
-/*
-   0                   1                   2                   3
-   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-  |    PayloadHdr (Type=49)       |   FU header   | DONL (cond)   |
-  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-|
-*/
-// Unlike H.264, HEVC NAL header is 2-bytes.
-static const size_t kHevcNalHeaderSize = 2;
-// H.265's FU is constructed of 2-byte payload header, and 1-byte FU header
-static const size_t kHevcFuHeaderSize = 1;
-static const size_t kHevcLengthFieldSize = 2;
-
-enum HevcNalHdrMasks {
-  kHevcFBit = 0x80,
-  kHevcTypeMask = 0x7E,
-  kHevcLayerIDHMask = 0x1,
-  kHevcLayerIDLMask = 0xF8,
-  kHevcTIDMask = 0x7,
-  kHevcTypeMaskN = 0x81,
-  kHevcTypeMaskInFuHeader = 0x3F
-};
-
-// Bit masks for FU headers.
-enum HevcFuDefs { kHevcSBit = 0x80, kHevcEBit = 0x40, kHevcFuTypeBit = 0x3F };
-
-}  // namespace
-
+using namespace H265;
 RtpPacketizerH265::RtpPacketizerH265(
     rtc::ArrayView<const uint8_t> payload,
     PayloadSizeLimits limits,

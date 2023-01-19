@@ -31,60 +31,8 @@
 #include "rtc_base/logging.h"
 
 namespace webrtc {
-namespace {
 
-enum NaluType {
-  kTrailN = 0,
-  kTrailR = 1,
-  kTsaN = 2,
-  kTsaR = 3,
-  kStsaN = 4,
-  kStsaR = 5,
-  kRadlN = 6,
-  kRadlR = 7,
-  kBlaWLp = 16,
-  kBlaWRadl = 17,
-  kBlaNLp = 18,
-  kIdrWRadl = 19,
-  kIdrNLp = 20,
-  kCra = 21,
-  kVps = 32,
-  kHevcSps = 33,
-  kHevcPps = 34,
-  kHevcAud = 35,
-  kPrefixSei = 39,
-  kSuffixSei = 40,
-  kHevcAp = 48,
-  kHevcFu = 49
-};
-
-/*
-   0                   1                   2                   3
-   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-  |    PayloadHdr (Type=49)       |   FU header   | DONL (cond)   |
-  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-|
-*/
-// Unlike H.264, HEVC NAL header is 2-bytes.
-static const size_t kHevcNalHeaderSize = 2;
-// H.265's FU is constructed of 2-byte payload header, and 1-byte FU header
-static const size_t kHevcFuHeaderSize = 1;
-static const size_t kHevcLengthFieldSize = 2;
-static const size_t kHevcApHeaderSize =
-    kHevcNalHeaderSize + kHevcLengthFieldSize;
-
-enum HevcNalHdrMasks {
-  kHevcFBit = 0x80,
-  kHevcTypeMask = 0x7E,
-  kHevcLayerIDHMask = 0x1,
-  kHevcLayerIDLMask = 0xF8,
-  kHevcTIDMask = 0x7,
-  kHevcTypeMaskN = 0x81,
-  kHevcTypeMaskInFuHeader = 0x3F
-};
-
-// Bit masks for FU headers.
-enum HevcFuDefs { kHevcSBit = 0x80, kHevcEBit = 0x40, kHevcFuTypeBit = 0x3F };
+using namespace H265;
 
 // TODO(pbos): Avoid parsing this here as well as inside the jitter buffer.
 bool ParseApStartOffsets(const uint8_t* nalu_ptr,
@@ -126,7 +74,7 @@ absl::optional<VideoRtpDepacketizer::ParsedRtpPayload> ProcessApOrSingleNalu(
   const size_t nalu_length = rtp_payload.size() - kHevcNalHeaderSize;
   uint8_t nal_type = (payload_data[0] & kHevcTypeMask) >> 1;
   std::vector<size_t> nalu_start_offsets;
-  if (nal_type == H265::NaluType::kAP) {
+  if (nal_type == H265::NaluType::kHevcAp) {
     // Skip the StapA header (StapA NAL type + length).
     if (rtp_payload.size() <= kHevcApHeaderSize) {
       RTC_LOG(LS_ERROR) << "AP header truncated.";
@@ -246,8 +194,8 @@ absl::optional<VideoRtpDepacketizer::ParsedRtpPayload> ProcessApOrSingleNalu(
       case H265::NaluType::kPrefixSei:
       case H265::NaluType::kSuffixSei:
         break;
-      case H265::NaluType::kAP:
-      case H265::NaluType::kFU:
+      case H265::NaluType::kHevcAp:
+      case H265::NaluType::kHevcFu:
         RTC_LOG(LS_WARNING) << "Unexpected AP or FU received.";
         return absl::nullopt;
     }
@@ -329,8 +277,6 @@ absl::optional<VideoRtpDepacketizer::ParsedRtpPayload> ParseFuNalu(
   return parsed_payload;
 }
 
-} // namespace
-
 absl::optional<VideoRtpDepacketizer::ParsedRtpPayload>
 VideoRtpDepacketizerH265::Parse(rtc::CopyOnWriteBuffer rtp_payload) {
   if (rtp_payload.size() == 0) {
@@ -340,7 +286,7 @@ VideoRtpDepacketizerH265::Parse(rtc::CopyOnWriteBuffer rtp_payload) {
 
   uint8_t nal_type = (rtp_payload.cdata()[0] & kHevcTypeMask) >> 1;
 
-  if (nal_type == H265::NaluType::kFU) {
+  if (nal_type == H265::NaluType::kHevcFu) {
     // Fragmented NAL units (FU-A).
     return ParseFuNalu(std::move(rtp_payload));
   } else {

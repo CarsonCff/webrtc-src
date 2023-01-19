@@ -30,6 +30,33 @@ const size_t kNaluShortStartSequenceSize = 3;
 // The size of the NALU type byte (2).
 const size_t kNaluTypeSize = 2;
 
+/*
+   0                   1                   2                   3
+   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  |    PayloadHdr (Type=49)       |   FU header   | DONL (cond)   |
+  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-|
+*/
+// Unlike H.264, HEVC NAL header is 2-bytes.
+const size_t kHevcNalHeaderSize = 2;
+// H.265's FU is constructed of 2-byte payload header, and 1-byte FU header
+const size_t kHevcFuHeaderSize = 1;
+const size_t kHevcLengthFieldSize = 2;
+const size_t kHevcApHeaderSize = kHevcNalHeaderSize + kHevcLengthFieldSize;
+
+enum HevcNalHdrMasks {
+  kHevcFBit = 0x80,
+  kHevcTypeMask = 0x7E,
+  kHevcLayerIDHMask = 0x1,
+  kHevcLayerIDLMask = 0xF8,
+  kHevcTIDMask = 0x7,
+  kHevcTypeMaskN = 0x81,
+  kHevcTypeMaskInFuHeader = 0x3F
+};
+
+// Bit masks for FU headers.
+enum HevcFuDefs { kHevcSBit = 0x80, kHevcEBit = 0x40, kHevcFuTypeBit = 0x3F };
+
 enum NaluType : uint8_t {
   kTrailN = 0,
   kTrailR = 1,
@@ -52,8 +79,8 @@ enum NaluType : uint8_t {
   kAud = 35,
   kPrefixSei = 39,
   kSuffixSei = 40,
-  kAP = 48,
-  kFU = 49
+  kHevcAp = 48,
+  kHevcFu = 49
 };
 
 enum SliceType : uint8_t { kB = 0, kP = 1, kI = 2 };

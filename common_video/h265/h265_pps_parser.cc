@@ -201,6 +201,11 @@ absl::optional<H265PpsParser::PpsState> H265PpsParser::ParseInternal(
   reader.ReadExponentialGolomb();
   // slice_segment_header_extension_present_flag: u(1)
   reader.ConsumeBits(1);
+    
+  // Far enough! We don't use the rest of the SPS.
+  if (!reader.Ok()) {
+    return absl::nullopt;
+  }
 
   return pps;
 }

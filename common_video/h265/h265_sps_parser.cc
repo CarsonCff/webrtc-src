@@ -398,8 +398,8 @@ absl::optional<H265SpsParser::SpsState> H265SpsParser::ParseSpsInternal(
   // Far enough! We don't use the rest of the SPS.
   if (!reader.Ok()) {
     return absl::nullopt;
-  } 
-
+  }
+    
   return OptionalSps(sps);
 }
 
