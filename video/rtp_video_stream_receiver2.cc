@@ -1200,88 +1200,81 @@ void RtpVideoStreamReceiver2::InsertSpsPpsIntoTracker(uint8_t payload_type) {
 // RTC_RUN_ON(packet_sequence_checker_)
 void RtpVideoStreamReceiver2::InsertVpsSpsPpsIntoTracker(const RtpPacketReceived& rtp_packet) {
   RTC_DCHECK_RUN_ON(&worker_task_checker_);
-  rtc::CopyOnWriteBuffer rtp_payload  = rtp_packet.PayloadBuffer() ;
-
-const uint8_t* const payload_data = rtp_payload.cdata();
-
-const uint8_t* nalu_start = payload_data + kHevcNalHeaderSize;
-const size_t nalu_length = rtp_payload.size() - kHevcNalHeaderSize;
-uint8_t nal_type = (payload_data[0] & kHevcTypeMask) >> 1;
-std::vector<size_t> nalu_start_offsets;
-if (nal_type == H265::NaluType::kHevcAp) {
-  // Skip the StapA header (StapA NAL type + length).
-  if (rtp_payload.size() <= kHevcApHeaderSize) {
-    RTC_LOG(LS_ERROR) << "AP header truncated.";
-    return;
-  }
-
-  if (!ParseApStartOffsets(nalu_start, nalu_length, &nalu_start_offsets)) {
-    RTC_LOG(LS_ERROR) << "AP packet with incorrect NALU packet lengths.";
-    return;
-  }
-
-  // nal_type = (payload_data[kHevcApHeaderSize] & kHevcTypeMask) >> 1;
-} else {
-  nalu_start_offsets.push_back(0);
-}
-
-nalu_start_offsets.push_back(rtp_payload.size() + kHevcLengthFieldSize);  // End offset.
-
-std::vector<uint8_t> vpsVec;
-std::vector<uint8_t> spsVec;
-std::vector<uint8_t> ppsVec;
-int length = 0;
-for (size_t i = 0; i < nalu_start_offsets.size() - 1; ++i) {
-  size_t start_offset = nalu_start_offsets[i];
-  // End offset is actually start offset for next unit, excluding length field
-  // so remove that from this units length.
-  size_t end_offset = nalu_start_offsets[i + 1] - kHevcLengthFieldSize;
-  if (end_offset - start_offset < kHevcNalHeaderSize) {  // Same as H.264.
-    RTC_LOG(LS_ERROR) << "AP packet too short";
-    return ;
-  }
-
-  H265NaluInfo nalu;
-  nalu.type = (payload_data[start_offset] & kHevcTypeMask) >> 1;
-  nalu.vps_id = -1;
-  nalu.sps_id = -1;
-  nalu.pps_id = -1;
-//  start_offset += kHevcNalHeaderSize;
-  switch (nalu.type) {
-    case H265::NaluType::kVps: {
-        length = end_offset - start_offset;
-        vpsVec.reserve(length); 
-        for(size_t i = start_offset; i < end_offset;  i++) {
-            vpsVec.push_back(payload_data[i]); 
-        }
-
-      break;
-    }
-    case H265::NaluType::kSps: {
-        length = end_offset - start_offset;
-        spsVec.reserve(length); 
-        for(size_t i = start_offset; i < end_offset;  i++) {
-            spsVec.push_back(payload_data[i]); 
-        }
-      break;
-    }
-    case H265::NaluType::kPps: {
-        length = end_offset - start_offset;
-        ppsVec.reserve(length); 
-        for(size_t i = start_offset; i < end_offset;  i++) {
-            ppsVec.push_back(payload_data[i]); 
-        }
-      break;
-    }
-    default:
-      RTC_LOG(LS_WARNING) << "Unexpected AP or FU received.";
+  rtc::CopyOnWriteBuffer rtp_payload = rtp_packet.PayloadBuffer();
+  const uint8_t* const payload_data = rtp_payload.cdata();
+  const uint8_t* nalu_start = payload_data + kHevcNalHeaderSize;
+  const size_t nalu_length = rtp_payload.size() - kHevcNalHeaderSize;
+  uint8_t nal_type = (payload_data[0] & kHevcTypeMask) >> 1;
+  std::vector<size_t> nalu_start_offsets;
+  if (nal_type == H265::NaluType::kHevcAp) {
+    // Skip the StapA header (StapA NAL type + length).
+    if (rtp_payload.size() <= kHevcApHeaderSize) {
+      RTC_LOG(LS_ERROR) << "AP header truncated.";
       return;
+    }
+
+    if (!ParseApStartOffsets(nalu_start, nalu_length, &nalu_start_offsets)) {
+      RTC_LOG(LS_ERROR) << "AP packet with incorrect NALU packet lengths.";
+      return;
+    }
+  } else {
+    nalu_start_offsets.push_back(0);
   }
 
-}
+  nalu_start_offsets.push_back(rtp_payload.size() + kHevcLengthFieldSize);  // End offset.
 
+  std::vector<uint8_t> vpsVec;
+  std::vector<uint8_t> spsVec;
+  std::vector<uint8_t> ppsVec;
+  int length = 0;
+  for (size_t i = 0; i < nalu_start_offsets.size() - 1; ++i) {
+    size_t start_offset = nalu_start_offsets[i];
+    // End offset is actually start offset for next unit, excluding length field
+    // so remove that from this units length.
+    size_t end_offset = nalu_start_offsets[i + 1] - kHevcLengthFieldSize;
+    if (end_offset - start_offset < kHevcNalHeaderSize) {  // Same as H.264.
+      RTC_LOG(LS_ERROR) << "AP packet too short";
+      return ;
+    }
 
-h265_tracker_.InsertVpsSpsPpsNalus(vpsVec, spsVec, ppsVec);
+    H265NaluInfo nalu;
+    nalu.type = (payload_data[start_offset] & kHevcTypeMask) >> 1;
+    nalu.vps_id = -1;
+    nalu.sps_id = -1;
+    nalu.pps_id = -1;
+    switch (nalu.type) {
+      case H265::NaluType::kVps: {
+          length = end_offset - start_offset;
+          vpsVec.reserve(length);
+          for(size_t i = start_offset; i < end_offset; i++) {
+              vpsVec.push_back(payload_data[i]);
+          }
+
+        break;
+      }
+      case H265::NaluType::kSps: {
+          length = end_offset - start_offset;
+          spsVec.reserve(length);
+          for(size_t i = start_offset; i < end_offset; i++) {
+              spsVec.push_back(payload_data[i]);
+          }
+        break;
+      }
+      case H265::NaluType::kPps: {
+          length = end_offset - start_offset;
+          ppsVec.reserve(length);
+          for(size_t i = start_offset; i < end_offset; i++) {
+              ppsVec.push_back(payload_data[i]);
+          }
+        break;
+      }
+      default:
+        RTC_LOG(LS_WARNING) << "Unexpected AP or FU received.";
+        return;
+    }
+  }
+
+  h265_tracker_.InsertVpsSpsPpsNalus(vpsVec, spsVec, ppsVec);
 }
 
 void RtpVideoStreamReceiver2::UpdatePacketReceiveTimestamps(
