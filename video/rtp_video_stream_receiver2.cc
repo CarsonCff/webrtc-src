@@ -625,7 +625,7 @@ void RtpVideoStreamReceiver2::OnReceivedPayloadData(
     // Only when we start to receive packets will we know what payload type
     // that will be used. When we know the payload type insert the correct
     // sps/pps into the tracker.
-    if (packet->payload_type != last_payload_type_) {
+    if (VideoFrameType::kVideoFrameKey == video_header.frame_type) {
       last_payload_type_ = packet->payload_type;
       InsertVpsSpsPpsIntoTracker(rtp_packet);
     }
