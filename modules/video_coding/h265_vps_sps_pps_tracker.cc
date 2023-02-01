@@ -70,7 +70,15 @@ H265VpsSpsPpsTracker::FixedBitstream H265VpsSpsPpsTracker::CopyAndFixBitstream(
         // If this is the first packet of an IDR, make sure we have the required
         // SPS/PPS and also calculate how much extra space we need in the buffer
         // to prepend the SPS/PPS to the bitstream with start codes.
-        if (video_header->is_first_packet_in_frame) {
+        int32_t slice_header_pos = H265::kHevcNalHeaderSize + H265::kHevcFuHeaderSize;
+        if (bitstream.size() < slice_header_pos) {
+          RTC_LOG(LS_WARNING) << "Nalu size less than " << slice_header_pos << ", error IDR nalu.";
+          return {kRequestKeyframe};
+        }
+          
+        // is first slice segment of the frame
+        bool is_first_slice_segment_in_pic_flag = (bitstream.data()[slice_header_pos - 1] & 0x80) >> 7;
+        if (is_first_slice_segment_in_pic_flag && video_header->is_first_packet_in_frame) {
           if (nalu.pps_id == -1) {
             RTC_LOG(LS_WARNING) << "No PPS id in IDR nalu.";
             return {kRequestKeyframe};
@@ -78,13 +86,9 @@ H265VpsSpsPpsTracker::FixedBitstream H265VpsSpsPpsTracker::CopyAndFixBitstream(
 
           pps = pps_data_.find(nalu.pps_id);
           if (pps == pps_data_.end()) {
-            if (!pps_data_.empty()) {
-              pps = pps_data_.begin();
-            } else {
-                RTC_LOG(LS_WARNING)
-                    << "No PPS with id " << nalu.pps_id << " received";
-                return {kRequestKeyframe};
-            }
+            RTC_LOG(LS_WARNING)
+                << "No PPS with id " << nalu.pps_id << " received";
+            return {kRequestKeyframe};
           }
 
           sps = sps_data_.find(pps->second.sps_id);
