@@ -49,7 +49,7 @@ H265VpsSpsPpsTracker::FixedBitstream H265VpsSpsPpsTracker::CopyAndFixBitstream(
   auto pps = pps_data_.end();
 
   for (size_t i = 0; i < h265_header.nalus_length; ++i) {
-    const H265NaluInfo& nalu = h265_header.nalus[i];
+    H265NaluInfo& nalu = h265_header.nalus[i];
     switch (nalu.type) {
       case H265::NaluType::kVps: {
         break;
@@ -78,9 +78,13 @@ H265VpsSpsPpsTracker::FixedBitstream H265VpsSpsPpsTracker::CopyAndFixBitstream(
 
           pps = pps_data_.find(nalu.pps_id);
           if (pps == pps_data_.end()) {
-            RTC_LOG(LS_WARNING)
-                << "No PPS with id " << nalu.pps_id << " received";
-            return {kRequestKeyframe};
+            if (!pps_data_.empty()) {
+              pps = pps_data_.begin();
+            } else {
+                RTC_LOG(LS_WARNING)
+                    << "No PPS with id " << nalu.pps_id << " received";
+                return {kRequestKeyframe};
+            }
           }
 
           sps = sps_data_.find(pps->second.sps_id);

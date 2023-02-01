@@ -1268,13 +1268,17 @@ void RtpVideoStreamReceiver2::InsertVpsSpsPpsIntoTracker(const RtpPacketReceived
           }
         break;
       }
+      case H265::NaluType::kHevcFu:
+        break;
       default:
-        RTC_LOG(LS_WARNING) << "Unexpected AP or FU received.";
+        RTC_LOG(LS_VERBOSE) << "Unexpected AP or FU received. nalu.type:" << nalu.type;
         return;
     }
   }
 
-  h265_tracker_.InsertVpsSpsPpsNalus(vpsVec, spsVec, ppsVec);
+  if (!vpsVec.empty() || !spsVec.empty() || !ppsVec.empty()) {
+     h265_tracker_.InsertVpsSpsPpsNalus(vpsVec, spsVec, ppsVec);
+  }
 }
 
 void RtpVideoStreamReceiver2::UpdatePacketReceiveTimestamps(
