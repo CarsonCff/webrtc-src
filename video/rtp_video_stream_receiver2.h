@@ -282,7 +282,7 @@ class RtpVideoStreamReceiver2 : public LossNotificationSender,
   bool IsRedEnabled() const;
   void InsertSpsPpsIntoTracker(uint8_t payload_type)
       RTC_RUN_ON(packet_sequence_checker_);
-  void InsertVpsSpsPpsIntoTracker(const RtpPacketReceived& packet);
+  void InsertVpsSpsPpsIntoTracker(const RtpPacketReceived& packet)
       RTC_RUN_ON(packet_sequence_checker_);
   void OnInsertedPacket(video_coding::PacketBuffer::InsertResult result)
       RTC_RUN_ON(packet_sequence_checker_);

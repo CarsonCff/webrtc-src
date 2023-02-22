@@ -71,7 +71,7 @@ H265VpsSpsPpsTracker::FixedBitstream H265VpsSpsPpsTracker::CopyAndFixBitstream(
         // SPS/PPS and also calculate how much extra space we need in the buffer
         // to prepend the SPS/PPS to the bitstream with start codes.
         int32_t slice_header_pos = H265::kHevcNalHeaderSize + H265::kHevcFuHeaderSize;
-        if (bitstream.size() < slice_header_pos) {
+        if ((int32_t)bitstream.size() < slice_header_pos) {
           RTC_LOG(LS_WARNING) << "Nalu size less than " << slice_header_pos << ", error IDR nalu.";
           return {kRequestKeyframe};
         }
