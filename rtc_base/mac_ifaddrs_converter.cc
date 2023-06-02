@@ -189,10 +189,38 @@ class IPv6AttributesGetter {
   int ioctl_socket_;
 };
 
-IPv6AttributesGetter::IPv6AttributesGetter()
-    : ioctl_socket_(
-          socket(AF_INET6, SOCK_DGRAM, 0 /* unspecified protocol */)) {
-  RTC_DCHECK_GE(ioctl_socket_, 0);
+//IPv6AttributesGetter::IPv6AttributesGetter()
+//    : ioctl_socket_(
+//          socket(AF_INET6, SOCK_DGRAM, 0 /* unspecified protocol */)) {
+//  RTC_DCHECK_GE(ioctl_socket_, 0);
+//}
+
+IPv6AttributesGetter::IPv6AttributesGetter() : ioctl_socket_(socket(AF_INET6, SOCK_DGRAM, 0 /* unspecified protocol */)) {
+    
+    printf("init ioctl_socket_: %d\n", ioctl_socket_);
+    
+    if (-1 == ioctl_socket_) {
+        
+        ioctl_socket_ = socket(AF_INET6, SOCK_DGRAM, 0);
+        
+        printf("1, -1, ioctl_socket_: %d\n", ioctl_socket_);
+    }
+    
+    if (-1 == ioctl_socket_) {
+        
+        ioctl_socket_ = socket(AF_INET6, SOCK_DGRAM, 0);
+        
+        printf("2, -1, ioctl_socket_: %d\n", ioctl_socket_);
+    }
+    
+    if (-1 == ioctl_socket_) {
+        
+        ioctl_socket_ = socket(AF_INET6, SOCK_DGRAM, 0);
+        
+        printf("3, -1, ioctl_socket_: %d\n", ioctl_socket_);
+    }
+    
+    RTC_DCHECK_GE(ioctl_socket_, 0);
 }
 
 bool IPv6AttributesGetter::IsInitialized() const {
