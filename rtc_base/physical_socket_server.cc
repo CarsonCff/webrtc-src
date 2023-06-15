@@ -120,6 +120,14 @@ class ScopedSetTrue {
 
 namespace rtc {
 
+int createSocketCount = 0;
+
+int physicalSocketDestructorCount = 0;
+
+int physicalSocketCloseCount = 0;
+
+int socketDispatcherCloseCount = 0;
+
 PhysicalSocket::PhysicalSocket(PhysicalSocketServer* ss, SOCKET s)
     : ss_(ss),
       s_(s),
@@ -139,6 +147,8 @@ PhysicalSocket::PhysicalSocket(PhysicalSocketServer* ss, SOCKET s)
 }
 
 PhysicalSocket::~PhysicalSocket() {
+    physicalSocketDestructorCount++;
+  printf("yunhe__physical Socket Destructor Count: %d\n", physicalSocketDestructorCount);
   Close();
 }
 
@@ -146,6 +156,8 @@ bool PhysicalSocket::Create(int family, int type) {
   Close();
   s_ = ::socket(family, type, 0);
   udp_ = (SOCK_DGRAM == type);
+    createSocketCount++;
+    printf("yunhe__create Socket Count: %d\n", createSocketCount);
   family_ = family;
   UpdateLastError();
   if (udp_) {
@@ -479,7 +491,10 @@ Socket* PhysicalSocket::Accept(SocketAddress* out_addr) {
 int PhysicalSocket::Close() {
   if (s_ == INVALID_SOCKET)
     return 0;
+    
   int err = ::closesocket(s_);
+    physicalSocketCloseCount++;
+    printf("yunhe__physical Socket Close Count: %d, err: ***%d***\n", physicalSocketCloseCount, err);
   UpdateLastError();
   s_ = INVALID_SOCKET;
   state_ = CS_CLOSED;
@@ -910,6 +925,9 @@ void SocketDispatcher::DisableEvents(uint8_t events) {
 #endif  // WEBRTC_USE_EPOLL
 
 int SocketDispatcher::Close() {
+    socketDispatcherCloseCount++;
+//    printf("yunhe__socket Dispatcher Close Count: %d\n", socketDispatcherCloseCount);
+    
   if (s_ == INVALID_SOCKET)
     return 0;
 
