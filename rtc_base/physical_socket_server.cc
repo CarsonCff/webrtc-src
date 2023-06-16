@@ -157,7 +157,7 @@ bool PhysicalSocket::Create(int family, int type) {
   s_ = ::socket(family, type, 0);
   udp_ = (SOCK_DGRAM == type);
     createSocketCount++;
-    printf("yunhe__create Socket Count: %d\n", createSocketCount);
+    printf("yunhe__create Socket Count: %d, s_: %d\n", createSocketCount, s_);
   family_ = family;
   UpdateLastError();
   if (udp_) {
@@ -489,6 +489,7 @@ Socket* PhysicalSocket::Accept(SocketAddress* out_addr) {
 }
 
 int PhysicalSocket::Close() {
+    printf("yunhe__ PhysicalSocket::Close() s_: %d \n", s_);
   if (s_ == INVALID_SOCKET)
     return 0;
     
